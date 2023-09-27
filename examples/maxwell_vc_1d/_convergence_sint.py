@@ -84,7 +84,9 @@ def em1D(mx=1024,num_frames=5,cfl=1.0,outdir='./_output',before_step=True,debug=
 
 #   Set the source
     if not psi:
-        print 'using dq_src'
+        #python2to3
+        #print 'using dq_src'
+        print('using dq_src')
         solver.dq_src = dq_source
 
 #   Import Riemann and Tfluct solvers
