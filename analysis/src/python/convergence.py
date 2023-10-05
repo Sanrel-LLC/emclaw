@@ -1,4 +1,4 @@
-fontsize = 18
+ fontsize = 18
 import os
 from glob import glob
 import numpy as np
