@@ -1,4 +1,7 @@
+# Set the fontsize for matplotlib plots
 fontsize = 18
+
+# Import necessary libraries and modules
 import os
 from glob import glob
 import numpy as np
@@ -27,8 +30,11 @@ from scipy.io import loadmat,savemat
 from matplotlib.streamplot import  streamplot
 
 # plot frame_plot_range together, define range
-frame_plot_range = range(1,101,1)
+#python2to3conversion
+#frame_plot_range = range(1,101,1)
+frame_plot_range = list(range(1,101,1))
 
+# Function to get a colormap
 def get_cmap(colormap='jet',num_colors=100):
     cmap = cm  = plt.get_cmap(colormap)
     cNorm     = colors.Normalize(vmin=0, vmax=num_colors)
@@ -36,6 +42,7 @@ def get_cmap(colormap='jet',num_colors=100):
     colores   = [scalarMap.to_rgba(k) for k in range(0,num_colors) ]    
     return colores
 
+# Function to get a ScalarMappable
 def get_smap(colormap='jet',vmin=0.0,vmax=10.0,num_colors=100):
     cmap = cm  = plt.get_cmap(colormap)
     cNorm     = colors.Normalize(vmin=0, vmax=vmax)
@@ -43,11 +50,13 @@ def get_smap(colormap='jet',vmin=0.0,vmax=10.0,num_colors=100):
     scalarMap._A = []
     return scalarMap
 
+# Function to get a color based on a value
 def get_color(value,cmap,vmin=0.0,vmax=10.0,num_colors=100):
     values    = np.arange(0,vmax+vmax/num_colors,vmax/num_colors)
     colorVal  = cmap[np.where(values>=value)[0][0]]
     return colorVal
 
+# Function to create a waterfall plot
 def waterfall_plot(q,x,sampling=10,cmap=None,num_colors=100,outdir='./',outname='waterfall',format='eps',cbar_label='$|q| (a.u.)$'):
     plt.figure()
     plt.hold(True)
@@ -77,6 +86,7 @@ def waterfall_plot(q,x,sampling=10,cmap=None,num_colors=100,outdir='./',outname=
     plt.close()
     return
 
+# Function for extracting a grid from a solution
 def get_grid(solution,sampling):
     x = solution.state.grid.c_centers[0][::sampling[0],::sampling[1]]
     y = solution.state.grid.c_centers[1][::sampling[0],::sampling[1]]
@@ -86,6 +96,7 @@ def get_grid(solution,sampling):
     dimension = np.asarray([[x_lower,y_lower],[x_upper,y_upper],[mx,my]])
     return x,y,dimension
 
+# Function for reading solution data
 def read_q(path='./_output',frame=0,read_aux=False,read_grid=False,read_q=True,qi=[0,1,2],sampling=[1,1],loc_max=True):
     solution = Solution()
     
@@ -117,6 +128,7 @@ def read_q(path='./_output',frame=0,read_aux=False,read_grid=False,read_q=True,q
 
     return sol_compilation if not read_q else q_all,sol_compilation
 
+# Function for extracting a cut line
 def extract_cut_line(q,x,y,plot=False,dim='xy',points=[0.0,5.0,199.0,5.0],num_points=1000,outdir='./',outname='cut',format='eps'):
     if not os.path.exists(outdir): os.makedirs(outdir)
     import scipy.ndimage
@@ -182,6 +194,7 @@ def extract_cut_line(q,x,y,plot=False,dim='xy',points=[0.0,5.0,199.0,5.0],num_po
     
     return di,qi
 
+# Function for plotting a field
 def plot_field(x,y,u,v,contour=True,outdir='./',outname='field',format='eps',cut_long=False):
     if not os.path.exists(outdir): os.makedirs(outdir)
     if cut_long: nrows=2
@@ -205,6 +218,7 @@ def plot_field(x,y,u,v,contour=True,outdir='./',outname='field',format='eps',cut
     plt.close()
     return
 
+# Function for plotting streamlines
 def plot_streamline(x,y,u,v,outdir='./',outname='field_stream',format='eps'):
     if not os.path.exists(outdir): os.makedirs(outdir)
     speed = np.sqrt(u**2+v**2)
@@ -215,6 +229,7 @@ def plot_streamline(x,y,u,v,outdir='./',outname='field_stream',format='eps'):
     plt.close()
     return
 
+# Function for calculating Poynting vectors
 def Poynting(q,plot=False,streamline=False,x=None,y=None,outdir='./',suffix='',format='eps',cut_long=False):
     u =      q[1]*q[2]
     v = -1.0*q[0]*q[2]
@@ -229,6 +244,7 @@ def Poynting(q,plot=False,streamline=False,x=None,y=None,outdir='./',suffix='',f
 
     return u,v
 
+# Function for assembling solution data
 def assemble_q(path='./_output',frame_plot_range=[0],poynting=True,read_aux=False,qi=[0,1,2],update_aux=False,sampling=[1,1],
     frame_split=False,split_q=False,figspath='./',binpath='./',cut=True):
     # create instance of solution object
@@ -269,7 +285,9 @@ def assemble_q(path='./_output',frame_plot_range=[0],poynting=True,read_aux=Fals
 
         q, solution = read_q(path=path,frame=frame,qi=qi,sampling=sampling)
 
-        for k in xrange(1,3,1):        
+        #python2to3conversion
+        #for k in xrange(1,3,1):  
+        for k in range(1,3,1):        
             dl[k-1],ql[k-1] = extract_cut_line(q[k],grid['x'],grid['y'],plot=cut,num_points=1000,
                 outdir=os.path.join(figspath,'cut_x'),outname='cut_q'+str(k-1)+'_'+str(frame).zfill(4),format='png')
 
@@ -315,6 +333,7 @@ def assemble_q(path='./_output',frame_plot_range=[0],poynting=True,read_aux=Fals
 
     return Q,d,sol
 
+# Function for post-processing
 def postprocess(outdir='./_output',multiple=False,overwrite=False,sampling=5,save_mat=True,
     frame_split=False,split_q=False,update_aux=True,poynting=True,cut=True):
     if multiple:
@@ -358,6 +377,7 @@ def postprocess(outdir='./_output',multiple=False,overwrite=False,sampling=5,sav
             if save_mat:
                 savemat(os.path.join(figspath,'summary'),summary)
 
+# Main execution block
 # num_frames = len(frame_plot_range)
 if __name__ == "__main__":
     # print 'la'

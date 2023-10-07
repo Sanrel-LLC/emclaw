@@ -1,4 +1,7 @@
+# Set the fontsize for plot labels and text
 fontsize = 18
+
+# Import necessary libraries and modules
 import os
 from glob import glob
 import numpy as np
@@ -26,9 +29,12 @@ from clawpack.pyclaw import Solution
 from scipy.io import loadmat,savemat
 from matplotlib.streamplot import  streamplot
 
-# plot frame_plot_range together, define range
-frame_plot_range = range(1,91,1)
+# Define a range of frames to plot
+#python2to3
+#frame_plot_range = range(1,91,1)
+frame_plot_range = list(range(1,91,1))
 
+# Function to get a colormap
 def get_cmap(colormap='jet',num_colors=100):
     cmap = cm  = plt.get_cmap(colormap)
     cNorm     = colors.Normalize(vmin=0, vmax=num_colors)
@@ -36,6 +42,7 @@ def get_cmap(colormap='jet',num_colors=100):
     colores   = [scalarMap.to_rgba(k) for k in range(0,num_colors) ]    
     return colores
 
+# Function to get a ScalarMappable
 def get_smap(colormap='jet',vmin=0.0,vmax=10.0,num_colors=100):
     cmap = cm  = plt.get_cmap(colormap)
     cNorm     = colors.Normalize(vmin=0, vmax=vmax)
@@ -43,11 +50,13 @@ def get_smap(colormap='jet',vmin=0.0,vmax=10.0,num_colors=100):
     scalarMap._A = []
     return scalarMap
 
+# Function to get a color based on a value
 def get_color(value,cmap,vmin=0.0,vmax=10.0,num_colors=100):
     values    = np.arange(0,vmax+vmax/num_colors,vmax/num_colors)
     colorVal  = cmap[np.where(values>=value)[0][0]]
     return colorVal
 
+# Function to create a waterfall plot
 def waterfall_plot(q,x,a=None,sampling=10,cmap=None,num_colors=100,outdir='./',outname='waterfall',format='eps',cbar_label='$|q| (a.u.)$'):
     plt.figure()
     fig = plt.figure(facecolor='white')
@@ -85,6 +94,7 @@ def waterfall_plot(q,x,a=None,sampling=10,cmap=None,num_colors=100,outdir='./',o
     plt.close()
     return
 
+# Function to create a 3D polygon plot
 def poly_plot(verts,cmap=None,sampled=None,view_angles=[10,270],outdir='./',outname='vert_',sampling=10,format='eps'):
     plt.figure()
     ax   = plt.gca(projection='3d')
@@ -128,6 +138,7 @@ def poly_plot(verts,cmap=None,sampled=None,view_angles=[10,270],outdir='./',outn
         plt.savefig(os.path.join(outdir,fig_name+'.'+format),format=format,dpi=320,bbox_inches='tight')
     return
 
+# Function to assemble data from simulation frames
 def assemble_q(path='./_output',frame_plot_range=[0],vecmagnitude=True,poynting=True,poly_verts=True):
     # create instance of solution object
     num_frames = len(frame_plot_range)
@@ -201,6 +212,7 @@ def assemble_q(path='./_output',frame_plot_range=[0],vecmagnitude=True,poynting=
 
     return Q,A,num_frames,derived_quantities
 
+# Main function for 1D post-processing
 def postprocess_1d(outdir='./_output',base_name='_res_',outsuffix='',read_aux=True,multiple=False,overwrite=False,sampling=5,velocity=True,save_mat=True,poly=False,color=False,lorentz=False):
     if multiple:
         outdir = outdir+'*'+outsuffix
@@ -359,6 +371,7 @@ def postprocess_1d(outdir='./_output',base_name='_res_',outsuffix='',read_aux=Tr
     if save_mat:
         savemat(os.path.join(figspath,base_name+'summary'),summary)
 
+# Function to plot summary data
 def plot_summary(x,y,dictionary,ndirs=4,p=0,dictsrc='bis',label_base='$v^{0}=$',xlabel='$t\quad (ct)^{-1}$',ylabel='y',shape='--',figspath='./_output',figname='figure',ylim=None):
     plt.close('all')
     plt.figure()
@@ -381,6 +394,7 @@ def plot_summary(x,y,dictionary,ndirs=4,p=0,dictsrc='bis',label_base='$v^{0}=$',
     plt.savefig(os.path.join(figspath,figname+'.eps'),format='eps',dpi=320,bbox_inches='tight')
     plt.close()
 
+# Function to plot two sets of data together
 def plot_together(x,y1,y2,xlabel='$t\quad (ct)^{-1}$',y1label='y1',y2label='y2',shape='.:',figspath='./_output',figname='figure'):
         plt.close('all')
         plt.figure()
@@ -394,7 +408,8 @@ def plot_together(x,y1,y2,xlabel='$t\quad (ct)^{-1}$',y1label='y1',y2label='y2',
         plt.draw()
         plt.savefig(os.path.join(figspath,figname+'.eps'),format='eps',dpi=320,bbox_inches='tight')
         plt.close()
-
+        
+# Function to plot a single set of data
 def plot_single(x,y,xlabel='$t\quad (ct)^{-1}$',ylabel='y',shape='--',figspath='./_output',figname='figure',ylim=None,vrip=None,xrip=None):
         plt.close('all')
         plt.figure()
@@ -417,4 +432,4 @@ if __name__ == "__main__":
     import sys
     args,app_args = util._info_from_argv(sys.argv)
     print(app_args)
-    postprocess_1d(**app_args)
+    postprocess_1d(**app_args) # Call the postprocessing function with command-line arguments
