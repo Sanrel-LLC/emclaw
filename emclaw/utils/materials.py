@@ -2,6 +2,7 @@ import numpy as np
 import pickle
 import os
 
+# Define a dictionary to store dimension information
 dim = {}
 dim['xyz'] = [0,1,2]
 dim['xy' ] = [0,1]
@@ -14,6 +15,7 @@ dim['z'  ] = [2]
 def user_material():
     pass
 
+# Define a Material class
 class Material(object):
 
     def save(self):
@@ -32,6 +34,7 @@ class Material(object):
         f.close()
 
     def _set_vacuum(self):
+        # Set vacuum properties based on the 'normalized_vacuum' attribute
         if self.normalized_vacuum:
             self.eo = 1.0
             self.mo = 1.0
@@ -54,11 +57,13 @@ class Material(object):
             setattr(self,key,self.options[key])
     
     def dump(self):
+        # Print the attributes of the class that don't start with underscores
         for attr in sorted(dir(self)):
             if not attr.startswith('_'):
                 print("%s = %s" % (attr, getattr(self, attr)))
 
     def _dump_to_latex(self):
+        # Dump class information in LaTeX format
         from tabulate import tabulate
         strt = r'\begin{table}[h!]' + '\n' + r'\centering' + '\n' + r'\begin{tabular}[cl]' + '\n' + r'\hline' + '\n'
         strt = strt + r'variable & value(s) \\' + '\n' + r'\hline' +'\n'
@@ -94,6 +99,7 @@ class Material(object):
         f.close()
 
     def _dump(self,obj):
+        # Dump the attributes of an object
         for attr in sorted(dir(obj)):
             try:
                 print("%s = %s" % (attr, getattr(obj, attr)))
@@ -101,6 +107,7 @@ class Material(object):
                 pass
 
     def plot(self,eta):
+        # Plot the given data using matplotlib and save it to a file
         import matplotlib
         # set matplotlib to work over X-forwarding
         matplotlib.use('Agg')
@@ -111,6 +118,7 @@ class Material(object):
         plt.savefig('./debug.png',dpi=320)
 
     def setaux_lower(self,state,dim,t,qbc,auxbc,num_ghost):
+        # Set lower auxiliary values based on the state, dimension, and other parameters
         grid = state.grid
         grid.compute_c_centers_with_ghost(num_ghost,recompute=True)
         
@@ -151,6 +159,7 @@ class Material(object):
         return auxbc
 
     def setaux_upper(self,state,dim,t,qbc,auxbc,num_ghost):
+        # Set upper auxiliary values based on the state, dimension, and other parameters
         grid = state.grid
         grid.compute_c_centers_with_ghost(num_ghost,recompute=True)
         if state.num_dim==1:
@@ -190,6 +199,7 @@ class Material(object):
         return auxbc
 
     def update_aux(self,solver,state):
+        # Update auxiliary values based on the solver and state
         grid = state.grid
         grid.compute_c_centers()
         t = state.t
@@ -208,6 +218,7 @@ class Material(object):
         return state
 
     def impose_metal(self,solver,state):
+        # Impose metal properties on the state
         if self.update_at_each_stage:
             self.update_aux(solver,state)
         if state.num_dim==2:
@@ -220,6 +231,7 @@ class Material(object):
         return state
 
     def init(self,state):
+        # Initialize state with material properties
         grid = state.grid
         grid._compute_c_centers()
         t = state.t
@@ -235,7 +247,7 @@ class Material(object):
         return state
 
     def _get_vibrate(self,x=0.0,y=0.0,span=None,t=0.0):
-
+        # Calculate vibrate properties based on given parameters
         w  = self.delta_function(self.delta_omega*t)
         dw = self.delta_sign_dt*self.delta_omega*self.delta_function_dt(self.delta_omega*t)
 
@@ -251,6 +263,7 @@ class Material(object):
         return w,dw
 
     def general_setup(self,options={}):
+        # General setup function to configure the material
         self._unpack_options(options=options)
         self._set_vacuum()
 
@@ -357,6 +370,7 @@ class Material(object):
         return
 
     def __init__(self,normalized=True,shape='homogeneous'):
+        # Constructor for the Material class
         self.normalized_vacuum = normalized
         self.shape     = shape
         self.custom    = False
@@ -373,8 +387,10 @@ class Material(object):
         self.update_at_each_stage = False
         self.function  = None
 
+# This is the Material1D class, a subclass of the Material class, for representing and manipulating 1D material properties.
 class Material1D(Material):
-
+    
+    # Function to set up material properties
     def setup(self,options={}):
         self._unpack_options(options=options)
         self._set_vacuum()
@@ -448,6 +464,7 @@ class Material1D(Material):
 
         return
 
+    # Function for the Farago shape
     def _farago(self,x,t):
         eta = np.zeros( [4,len(x)], order='F')
 
@@ -458,12 +475,15 @@ class Material1D(Material):
 
         return eta
 
+    # Function to calculate offsets for x
     def _x_w_offset(self,x,v=[0.0,0.0],t=0.0):
+        #Calculate offsets for x based on velocity and time.
         u_x_e = x - v[0]*t - self.offset_e
         u_x_m = x - v[1]*t - self.offset_h
 
         return u_x_e,u_x_m
 
+    # Function for Gaussian RIP shape
     def _gaussian_rip(self,x,t):
                 
         eta = np.zeros( [4,len(x)], order='F')
@@ -493,6 +513,7 @@ class Material1D(Material):
 
         return eta
 
+    # Function for Gaussian shape
     def _gaussian(self,x,t=0):
         
         eta = np.zeros( [4,len(x)], order='F')
@@ -506,6 +527,7 @@ class Material1D(Material):
 
         return eta
 
+    # Function for Gaussian smoothing
     def _gaussianf(self,x):
 
         u = x - self.delta_corner + self.delta_length/2.0
@@ -516,6 +538,7 @@ class Material1D(Material):
         
         return g
 
+    # Function for oscillating shape
     def _oscillate(self,x,t=0):
 
         eta = np.zeros( [4,x.shape[0]], order='F')
@@ -533,6 +556,7 @@ class Material1D(Material):
 
         return eta
 
+    # Function for tanh RIP shape
     def _tanh_rip(self,x,t):
         
         eta = np.zeros( [4,len(x)], order='F')
@@ -546,6 +570,7 @@ class Material1D(Material):
 
         return eta
 
+    # Function for homogeneous shape
     def _homogeneous(self,x,t=0):
 
         eta = np.zeros( [4,len(x)], order='F')
@@ -555,6 +580,7 @@ class Material1D(Material):
 
         return eta
 
+    # Function to calculate n values
     def _calculate_n(self):
         
         eta = self.bkg_eta
@@ -570,6 +596,7 @@ class Material1D(Material):
 
         return
 
+    # Initialize the Material1D class
     def __init__(self,normalized=True,shape='homogeneous'):
         self.num_aux = 4
         self.num_dim = 1
@@ -580,13 +607,15 @@ class Material1D(Material):
         self.bkg_h = 1.0
         self._dx = 1
 
+# The 'Material2D' class inherits from the 'Material' class.
 class Material2D(Material):
 
     def setup(self,options={}):
+        # Function to set up material properties.
         self.general_setup()
 
     def _calculate_n(self):
-        
+        # Function to calculate refractive indices.
         eta = self.bkg_eta
         
         if hasattr(self,'fiber_eta'):
@@ -607,7 +636,7 @@ class Material2D(Material):
         return
 
     def _gaussian_rip(self,x,y,t):
-                
+        # Function for Gaussian-like material response.
         eta = np.zeros( [6,x.shape[0],y.shape[1]], order='F')
         _r2 = np.zeros( [3,x.shape[0],y.shape[1]], order='F')
         _rt = np.zeros( [3,x.shape[0],y.shape[1]], order='F')
@@ -642,6 +671,7 @@ class Material2D(Material):
         return eta
 
     def _averaged_gauss(self,x,dx=None,s=1.0,xo=0.0,v=0.0,t=0.0):
+        # Function for averaging a Gaussian response.
         from scipy.special import erf
         arg = xo + v*t - x
         if dx is None:
@@ -653,6 +683,7 @@ class Material2D(Material):
         return erravg
 
     def _gaussian_rip_averaged(self,x,y,t=0):
+        # Function for averaged Gaussian-like material response.
         eta = np.zeros( [6,x.shape[0],y.shape[1]], order='F')
         _r2 = np.ones(  [3,x.shape[0],y.shape[1]], order='F')
         _rp = np.ones(  [3,x.shape[0],y.shape[1]], order='F')
@@ -690,7 +721,7 @@ class Material2D(Material):
         return eta
 
     def _gaussianf(self,x,y):
-
+        # Function for a Gaussian-like response in 2D.
         u = x - (self.delta_corner[0] + self.delta_smooth_length/2.0)
         v = y - (self.delta_corner[1] + self.delta_smooth_width/2.0)
 
@@ -701,7 +732,7 @@ class Material2D(Material):
         return g
 
     def _sinsin(self,x,y):
-
+        # Function for a sinusoidal response in 2D.
         l = self.delta_smooth_length
         w = self.delta_smooth_width
 
@@ -711,7 +742,7 @@ class Material2D(Material):
         return s
 
     def _rotating_sinsin(self,x,y,t):
-
+        # Function for a rotating sinusoidal response in 2D.
         p = self.delta_angular_velocity
         o = self.delta_omega
         l = self.delta_smooth_length
@@ -732,7 +763,7 @@ class Material2D(Material):
         return s,ds
 
     def _gaussian(self,x,y,t=0):
-        
+        # Function for Gaussian-like material response in 2D.
         eta = np.zeros( [6,x.shape[0],y.shape[1]], order='F')
         _r2 = np.zeros( [3,x.shape[0],y.shape[1]], order='F')
 
@@ -755,7 +786,7 @@ class Material2D(Material):
         return eta
 
     def _tanh_rip(self,x,t):
-
+        # Function for material response with hyperbolic tangent profile.
         eta = np.zeros( [6,x.shape[0],y.shape[1]], order='F')
         _r2 = np.zeros( [3,x.shape[0],y.shape[1]], order='F')
 
@@ -781,7 +812,7 @@ class Material2D(Material):
         return eta
 
     def _homogeneous(self,x,y,t=0):
-
+        # Function for a homogeneous material.
         eta = np.zeros( [6,x.shape[0],y.shape[1]], order='F')
 
         for i in range(0,3): eta[i] = self.bkg_eta[i]
@@ -789,7 +820,7 @@ class Material2D(Material):
         return eta
 
     def _single_fiber(self,x,y,t=0):
-
+        # Function for material response with a single fiber.
         eta = np.zeros( [6,x.shape[0],y.shape[1]], order='F')
 
         yi = self.fiber_corner[1]
@@ -805,7 +836,7 @@ class Material2D(Material):
         return eta
 
     def _double_fiber(self,x,y,t=0):
-
+        # Function for material response with double fibers.
         eta = np.zeros( [6,x.shape[0],y.shape[1]], order='F')
 
         y1i,y2i = self.fiber_corner[:,1]
@@ -825,7 +856,7 @@ class Material2D(Material):
         return eta
 
     def _oscillate(self,x,y,t=0):
-
+        # Function for material response with oscillations.
         eta = np.zeros( [6,x.shape[0],y.shape[1]], order='F')
 
         xi,yi = self.fiber_corner
@@ -850,6 +881,7 @@ class Material2D(Material):
         return eta
 
     def _expanding(self,x,y,t=0.0):
+        # Function for an expanding material response.
         for k in range(2): self.delta_sigma[k,:].fill(self.delta_radii[k]/((1+self.delta_expansion_rate[k]*t)))
 
         eta = self._gaussian_rip(x,y,t)
@@ -857,6 +889,7 @@ class Material2D(Material):
         return eta
 
     def __init__(self,normalized=True,shape='homogeneous',metal=False):
+        # Constructor for the Material2D class.
         self.num_aux = 6
         self.num_dim = 2
         self.options = {}
@@ -866,12 +899,15 @@ class Material2D(Material):
         self._dx = 1.0
         self._dy = 1.0
 
+# Material3D class inherits from the Material class and defines 3D material properties and responses.
 class Material3D(Material):
+    
     def setup(self,options={}):
+        # Function to set up material properties.
         self.general_setup()
 
     def _calculate_n(self):
-        
+        # Function to calculate refractive indices.
         eta = self.bkg_eta
         
         if hasattr(self,'fiber_eta'):
@@ -891,6 +927,7 @@ class Material3D(Material):
         return eta
 
     def _gaussian_rip(self,x,y,z,t=0):
+        # Function for Gaussian-like material response.
         grid = [x,y,z]
         eta = np.zeros( [12,x.shape[0],y.shape[1],z.shape[2]], order='F')
         _r2 = np.zeros( [ 6,x.shape[0],y.shape[1],z.shape[2]], order='F')
@@ -934,7 +971,7 @@ class Material3D(Material):
         return eta
 
     def _gaussianf(self,x,y,z):
-
+        # Function for a Gaussian-like response in 3D.
         u = x - (self.delta_corner[0] + self.delta_smooth_length/2.0)
         v = y - (self.delta_corner[1] + self.delta_smooth_width/2.0)
         v = z - (self.delta_corner[2] + self.delta_smooth_height/2.0)
@@ -946,6 +983,7 @@ class Material3D(Material):
         return g
 
     def _gaussian(self,x,y,z,t=0):
+        # Function for Gaussian-like material response in 3D.
         grid = [x,y,z]
         eta = np.zeros( [12,x.shape[0],y.shape[1],z.shape[2]], order='F')
         _r2 = np.zeros( [ 6,x.shape[0],y.shape[1],z.shape[2]], order='F')
@@ -979,6 +1017,7 @@ class Material3D(Material):
         return eta
 
     def _tanh_rip(self,x,y,z,t=0):
+        # Function for material response with hyperbolic tangent profile.
         grid = [x,y,z]
         eta = np.zeros( [12,x.shape[0],y.shape[1],z.shape[2]], order='F')
         _r2 = np.zeros( [ 6,x.shape[0],y.shape[1],z.shape[2]], order='F')
@@ -1022,6 +1061,7 @@ class Material3D(Material):
         return eta
 
     def _homogeneous(self,x,y,z,t=0):
+        # Function for a homogeneous material.
 
         eta = np.zeros( [12,x.shape[0],y.shape[1],z.shape[2]], order='F')
 
@@ -1030,7 +1070,7 @@ class Material3D(Material):
         return eta
 
     def _single_fiber(self,x,y,z,t=0):
-
+        # Function for material response with a single fiber.
         eta = np.zeros( [12,x.shape[0],y.shape[1],z.shape[2]], order='F')
 
         xi,yi,zi = self.fiber_corner
@@ -1046,7 +1086,7 @@ class Material3D(Material):
         return eta
 
     def _double_fiber(self,x,y,z,t=0):
-
+        # Function for material response with double fibers.
         eta = np.zeros( [12,x.shape[0],y.shape[1],z.shape[2]], order='F')
 
         y1i,y2i = self.fiber_corner[:,1]
@@ -1070,7 +1110,7 @@ class Material3D(Material):
         return eta
 
     def _oscillate(self,x,y,z,t=0):
-
+        # Function for material response with oscillations.
         eta = np.zeros( [12,x.shape[0],y.shape[1],z.shape[2]], order='F')
 
         xi,yi,zi = self.fiber_corner
@@ -1088,6 +1128,7 @@ class Material3D(Material):
         return eta
 
     def __init__(self,normalized=True,shape='homogeneous',metal=False):
+        # Constructor for the Material3D class.
         self.num_aux = 12
         self.num_dim = 3
         self.options = {}
