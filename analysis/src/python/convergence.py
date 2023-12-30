@@ -1,4 +1,4 @@
-fontsize = 18
+ fontsize = 18
 import os
 from glob import glob
 import numpy as np
@@ -27,10 +27,13 @@ from matplotlib.streamplot import  streamplot
 from scipy.io import loadmat,savemat
 
 class Convergence(object):
-        
+    # Debug message function      
     def debug_message(self,results,restype):
-        print '\n'+restype+' (absolute)\t\t'+str(results[0])
-        print restype+' (relative)\t\t'+str(results[1])
+# Python 2 to 3 conversion for below code lines
+    #print '\n'+restype+' (absolute)\t\t'+str(results[0])
+    # print restype+' (relative)\t\t'+str(results[1])
+        print('\n'+restype+' (absolute)\t\t'+str(results[0]))
+        print(restype+' (relative)\t\t'+str(results[1]))
 
     def reduce_dim(self,q):
         if len(q.shape)==2:
@@ -200,9 +203,13 @@ class Convergence(object):
     def getdirs(self):
         testdirs = sorted(glob(os.path.join(self.testdir,self.basedir+'*')))
 
+    
         if self.debug:
-            print 'Test dirs are:'
-            print testdirs
+        # Python 2 to 3 conversion for below code lines
+          #print 'Test dirs are:'
+           #print testdirs
+            print('Test dirs are:')
+            print(testdirs)
 
         return testdirs
 
@@ -227,7 +234,9 @@ class Convergence(object):
         delta  = solution.state.grid.delta
 
         if homogeneous:
-            print 'dividing by aux'
+            #Coverted to Python 3 for below code line
+            #print 'dividing by aux'
+            print('dividing by aux')
             qclaw = qclaw/(solution.state.get_aux_global()[qn])
 
         return qclaw,xclaw,delta
@@ -324,9 +333,13 @@ class Errors1D(Convergence):
         setattr(self, 'indmax', indmax)
 
         if self.debug:
-            print indmax, q_exact[indmax], q_exact.max()
-            print indmax, x_exact[indmax]
-            print zoom_range
+            #Converted to Python 3 for below lines
+           # print indmax, q_exact[indmax], q_exact.max()
+            #print indmax, x_exact[indmax]
+           # print zoom_range
+            print(indmax, q_exact[indmax], q_exact.max())
+            print(indmax, x_exact[indmax])
+            print(zoom_range)
 
         return indmax,zoom_range
 
@@ -349,11 +362,16 @@ class Errors1D(Convergence):
         # load solution at finest grid to be used as reference
         qfinest,xfinest,deltafinest = self.getClaw(self.finesrc)
 
-        for m,enddir in enumerate(xrange(self.basemin,self.basemax+1,1)):
+# Coverted to Python 3 for below lines
+#   for m,enddir in enumerate(xrange(self.basemin,self.basemax+1,1)):
+        for m,enddir in enumerate(range(self.basemin,self.basemax+1,1)):
             dirs = os.path.join(self.testdir,self.basedir+str(enddir))
+# Coverted to Python 3 for below lines
+ #print '\n-------------------------------------------'
+  #          print '\ndir ', dirs+''
 
-            print '\n-------------------------------------------'
-            print '\ndir ', dirs+''
+            print('\n-------------------------------------------')
+            print('\ndir ', dirs+'')
 
             # load first pyclaw solution qn
             qclaw,xclaw,delta = self.getClaw(dirs)
@@ -377,8 +395,11 @@ class Errors1D(Convergence):
             # get the error with respect to the refined solution
             if enddir<self.basemax:
                 dir_refined = os.path.join(self.testdir,self.basedir+str(enddir+1))
-                print '\n-------------------------------------------'
-                print '\ndir ', dir_refined
+                # Converted to Python 3 for below lines
+              #  print '\n-------------------------------------------'
+               # print '\ndir ', dir_refined
+                print('\n-------------------------------------------')
+                print('\ndir ', dir_refined)
 
                 qref,xref,deltaref = self.getClaw(dir_refined)
                 sfiner_difference  = self.self_convergence(qclaw,qref,delta)
@@ -404,9 +425,13 @@ class Errors1D(Convergence):
             strt = tabulate(results,headers=headers,tablefmt="latex",floatfmt="4.3e")
             dstfile = os.path.join(self.reportdir,'table_errors.tex')
             if self.debug:
-                print strt
+                  # Converted to Python 3 for below lines
+                  # print strt
+                print(strt)
         except:
-            print 'Unable to create table of errors, have you done pip install tabulate'
+            # Converted to Python 3 for below lines
+                  # print 'Unable to create table of errors, have you done pip install tabulate'
+            print('Unable to create table of errors, have you done pip install tabulate')
             pass
 
         rate = np.zeros([3,2])
@@ -428,7 +453,9 @@ class Errors1D(Convergence):
             f.write(strt)
             f.close()
             if self.debug:
-                print strt
+                # # Converted to Python 3 for below lines
+                #  print strt
+                print(strt)
         except:
             pass
 
@@ -466,12 +493,15 @@ class Errors2D(Convergence):
 
         # load solution at finest grid to be used as reference
         qfinest,xfinest,deltafinest = self.getClaw(self.finesrc)
-
-        for m,enddir in enumerate(xrange(self.basemin,self.basemax+1,1)):
+#Converted to Python 3 for below lines
+#  for m,enddir in enumerate(xrange(self.basemin,self.basemax+1,1)):
+        for m,enddir in enumerate(range(self.basemin,self.basemax+1,1)):
             dirs = os.path.join(self.testdir,self.basedir+str(enddir))
-
-            print '\n-------------------------------------------'
-            print '\ndir ', dirs+''
+#Converted to Python 3 for below lines
+# print '\n-------------------------------------------'
+         #   print '\ndir ', dirs+''
+            print('\n-------------------------------------------')
+            print('\ndir ', dirs+'')
 
             # load first pyclaw solution qn
             qclaw,xclaw,delta = self.getClaw(dirs)
@@ -482,8 +512,11 @@ class Errors2D(Convergence):
             # get the error with respect to the refined solution
             if enddir<self.basemax:
                 dir_refined = os.path.join(self.testdir,self.basedir+str(enddir+1))
-                print '\n-------------------------------------------'
-                print '\ndir ', dir_refined
+                #Converted to Python 3 for below lines
+                 #print '\n-------------------------------------------'
+               # print '\ndir ', dir_refined
+                print('\n-------------------------------------------')
+                print('\ndir ', dir_refined)
 
                 qref,xref,deltaref = self.getClaw(dir_refined)
                 sfiner_difference  = self.self_convergence(qclaw,qref,delta)
@@ -504,9 +537,13 @@ class Errors2D(Convergence):
             strt = tabulate(results,headers=headers,tablefmt="latex",floatfmt="4.3e")
             dstfile = os.path.join(self.reportdir,'table_errors.tex')
             if self.debug:
-                print strt
+                #Converted to Python 3 for below lines
+                #print strt
+                print(strt)
         except:
-            print 'Unable to create table of errors, have you done pip install tabulate'
+            #Converted to Python 3 for below lines
+            # print 'Unable to create table of errors, have you done pip install tabulate'
+            print('Unable to create table of errors, have you done pip install tabulate')
             pass
 
         rate = np.zeros([2,2])
@@ -524,7 +561,9 @@ class Errors2D(Convergence):
             f.write(strt)
             f.close()
             if self.debug:
-                print strt
+                 #Converted to Python 3 for below lines
+                 # print strt
+                print(strt)
         except:
             pass
 
